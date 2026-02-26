@@ -103,6 +103,8 @@ class PD_GUI(QtWidgets.QMainWindow):
         self.show()
 
     def count_track_notes(self):
+        if self.mc.midi_file is None or self.mc.midi_file == "":
+            return 0
         mid = mido.MidiFile(self.mc.midi_file)
         note_count = 0
         for msg in mid.tracks[self.mc.convert_track_index]:
@@ -111,6 +113,8 @@ class PD_GUI(QtWidgets.QMainWindow):
         return note_count
 
     def count_all_notes(self):
+        if self.mc.midi_file is None or self.mc.midi_file == "":
+            return 0
         mid = mido.MidiFile(self.mc.midi_file)
         note_count = 0
         for i, track in enumerate(mid.tracks):
