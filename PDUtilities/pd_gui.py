@@ -94,7 +94,7 @@ class PD_GUI(QtWidgets.QMainWindow):
         # Connect artist name field to update song display title
         self.artistNameLineEdit.textChanged.connect(self._artist_name_changed)
 
-        self.lastOpenFolder = "."
+        self.lastOpenFolders = {}
 
         # Loads the default drum set that many custom songs will utilize
         default_set_file = os.path.join(project_dir, "drum_sets", "defaultset.rlrr")
@@ -141,16 +141,25 @@ class PD_GUI(QtWidgets.QMainWindow):
     def set_default_set(self, default_set):
         self.mc.analyze_drum_set(default_set)
 
-        self.mc.output_rlrr_dir = "rlrr_files"
+        self.mc.output_rlrr_dir = os.path.join(project_dir, 'rlrr_files')
+        self._set_last_open_folder("output", self.mc.output_rlrr_dir)
 
         # Sets the last open folder to drum_sets directory
-        self.lastOpenFolder = os.path.dirname(default_set)
+        self._set_last_open_folder("drum_set", default_set)
 
         midi_yaml = os.path.join(project_dir, 'midi_maps', 'pdtracks_mapping.yaml')
         with open(midi_yaml) as file:
             midi_yaml_dict = yaml.load(file, Loader=yaml.FullLoader)
             self.mc.create_midi_map(midi_yaml_dict)
             self.midiMappingLineEdit.setText(os.path.basename(midi_yaml))
+        self._set_last_open_folder("midi_map", midi_yaml)
+
+    def _get_last_open_folder(self, key):
+        return self.lastOpenFolders.get(key, ".")
+
+    def _set_last_open_folder(self, key, selected_path):
+        if selected_path:
+            self.lastOpenFolders[key] = os.path.dirname(selected_path)
 
     # LOCAL GUI FUNCTIONS
     def _track_song_player(self, audio_path):
@@ -205,13 +214,17 @@ class PD_GUI(QtWidgets.QMainWindow):
 
     def _select_midi_clicked(self):
         self.midiTrackComboBox.clear()
-        self.mc.midi_file = QFileDialog.getOpenFileName(self, ("Select Midi File"), self.lastOpenFolder, ("Midi Files (*.mid *.midi *.kar)"))[0]
+        self.mc.midi_file = QFileDialog.getOpenFileName(self, ("Select Midi File"), self._get_last_open_folder("midi"), ("Midi Files (*.mid *.midi *.kar)"))[0]
         # print(midi_file)
         if not self.mc.midi_file:  # User cancelled the dialog
             return
 
         (default_track, default_index) = self.mc.get_default_midi_track()
-        self.lastOpenFolder = self.mc.midi_file.rsplit('/', 1)[0]
+        self._set_last_open_folder("midi", self.mc.midi_file)
+        self._set_last_open_folder("audio_file", self.mc.midi_file)
+        self._set_last_open_folder("cover_image", self.mc.midi_file)
+        self._set_last_open_folder("song_preview", self.mc.midi_file)
+
         self.midiFileLineEdit.setText(self.mc.midi_file.split('/')[-1])
         for i in range(len(self.mc.midi_track_names)):
             item_name = 'Track ' + str(i) + ': ' + self.mc.midi_track_names[i]
@@ -232,14 +245,15 @@ class PD_GUI(QtWidgets.QMainWindow):
             self.sd_gui.change_midi(self.mc.midi_file)
 
     def _select_midi_map_clicked(self):
-        midi_yaml = QFileDialog.getOpenFileName(self, ("Select Midi File"), self.lastOpenFolder, ("Midi Map (*.yaml *yml)"))[0]
+        midi_yaml = QFileDialog.getOpenFileName(self, ("Select Midi File"), self._get_last_open_folder("midi_map"), ("Midi Map (*.yaml *yml)"))[0]
         if not midi_yaml:  # User cancelled the dialog
             return
         with open(midi_yaml) as file:
             midi_yaml_dict = yaml.load(file, Loader=yaml.FullLoader)
             self.mc.create_midi_map(midi_yaml_dict)
             self.midiMappingLineEdit.setText(midi_yaml.split('/')[-1])
-        
+        self._set_last_open_folder("midi_map", midi_yaml)
+
         # Update song display with new mapping
         self.sd_gui.change_midi_map(midi_yaml)
         
@@ -248,8 +262,9 @@ class PD_GUI(QtWidgets.QMainWindow):
         self.convertedEventsNum.setText(str(self.count_converted_events()))
 
     def _set_output_clicked(self):
-        output_folder = QFileDialog.getExistingDirectory(self, ("Select Folder"), self.lastOpenFolder)
+        output_folder = QFileDialog.getExistingDirectory(self, ("Select Folder"), self._get_last_open_folder("output"))
         print(output_folder)
+        self._set_last_open_folder("output", output_folder)
         self.mc.output_rlrr_dir = output_folder
 
     def _midi_track_index_changed(self, index):
@@ -258,17 +273,21 @@ class PD_GUI(QtWidgets.QMainWindow):
         self.convertedEventsNum.setText(str(self.count_converted_events()))
 
     def _select_drum_set_clicked(self):
-        self.mc.drum_set_file = QFileDialog.getOpenFileName(self, ("Select Drum Set File"), self.lastOpenFolder, ("PD Drum Set Files (*.rlrr)"))[0]
+        self.mc.drum_set_file = QFileDialog.getOpenFileName(self, ("Select Drum Set File"), self._get_last_open_folder("drum_set"), ("PD Drum Set Files (*.rlrr)"))[0]
+        if not self.mc.drum_set_file:
+            return
         print(self.mc.drum_set_file)
         self.mc.analyze_drum_set(self.mc.drum_set_file)
-        self.lastOpenFolder = self.mc.drum_set_file.rsplit('/', 1)[0]
+        self._set_last_open_folder("drum_set", self.mc.drum_set_file)
         self.drumSetLineEdit.setText(self.mc.drum_set_file.split('/')[-1])
 
     def _select_audio_file_clicked(self):
         sender_name = self.sender().objectName()
         is_drum_track = "Drum" in sender_name
         track_index = int(sender_name.split('_')[-1]) - 1
-        audio_file = QFileDialog.getOpenFileName(self, ("Select Audio File"), self.lastOpenFolder, ("Audio Files (*.mp3 *.wav *.ogg)"))[0]
+        audio_file = QFileDialog.getOpenFileName(self, ("Select Audio File"), self._get_last_open_folder("audio_file"), ("Audio Files (*.mp3 *.wav *.ogg)"))[0]
+        if not audio_file:
+            return
         print(audio_file)
         if is_drum_track:
             self.mc.drum_tracks[track_index] = audio_file
@@ -277,23 +296,25 @@ class PD_GUI(QtWidgets.QMainWindow):
             self.mc.song_tracks[track_index] = audio_file
             print(self.mc.song_tracks)
 
-        self.lastOpenFolder = audio_file.rsplit('/', 1)[0]
+        self._set_last_open_folder("audio_file", audio_file)
         line_edit = getattr(self, ('drum' if is_drum_track else 'song') + 'TrackLineEdit_' + str(track_index+1))
         print(line_edit)
         line_edit.setText(audio_file.split('/')[-1])
 
     def _select_cover_image_clicked(self):
-        self.mc.cover_image_path = QFileDialog.getOpenFileName(self, ("Select Cover Image"), self.lastOpenFolder, ("Image Files (*.png *.jpg)"))[0]
+        self.mc.cover_image_path = QFileDialog.getOpenFileName(self, ("Select Cover Image"), self._get_last_open_folder("cover_image"), ("Image Files (*.png *.jpg)"))[0]
+        if not self.mc.cover_image_path:
+            return
         print(self.mc.cover_image_path)
-        self.lastOpenFolder = self.mc.cover_image_path.rsplit('/', 1)[0]
+        self._set_last_open_folder("cover_image", self.mc.cover_image_path)
         self.coverImageLineEdit.setText(self.mc.cover_image_path.split('/')[-1])
 
     def _select_song_preview_clicked(self):
-        audio_file = QFileDialog.getOpenFileName(self, ("Select Song Preview Track"), self.lastOpenFolder, ("Audio Files (*.mp3 *.wav *.ogg)"))[0]
+        audio_file = QFileDialog.getOpenFileName(self, ("Select Song Preview Track"), self._get_last_open_folder("song_preview"), ("Audio Files (*.mp3 *.wav *.ogg)"))[0]
         if audio_file:
             self.mc.song_preview_track = audio_file
             print(f"Song preview track: {self.mc.song_preview_track}")
-            self.lastOpenFolder = audio_file.rsplit('/', 1)[0]
+            self._set_last_open_folder("song_preview", audio_file)
             self.songPreviewLineEdit.setText(audio_file.split('/')[-1])
 
     def _convert_clicked(self):
