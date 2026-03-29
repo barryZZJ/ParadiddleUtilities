@@ -400,6 +400,7 @@ class MidiConverter:
         # Filter out empty strings from track lists
         flt_drum_tracks = [x for x in self.drum_tracks if x.strip()]
         flt_song_tracks = [x for x in self.song_tracks if x.strip()]
+        flt_song_preview_tracks = [self.song_preview_track.strip()]
 
         # use whichever is longer for our overall song length
         last_event_time = 0
@@ -449,11 +450,15 @@ class MidiConverter:
                 print("Error creating directory:", str(e))
                 return f"Failed to create output directory `{output_folder_path}`"
 
-        all_tracks = flt_drum_tracks + flt_song_tracks
+        all_tracks = flt_drum_tracks + flt_song_tracks + flt_song_preview_tracks
         for track in all_tracks:
-            copyfile(track, output_folder_path + '/' + track.split('/')[-1])
+            target_path = os.path.join(output_folder_path, track.split('/')[-1])
+            if os.path.isfile(track) and not os.path.isfile(target_path):
+                copyfile(track, target_path)
         if self.cover_image_path:
-            copyfile(self.cover_image_path, output_folder_path + '/' + cover_image_short)
+            target_path = os.path.join(output_folder_path, cover_image_short)
+            if os.path.isfile(self.cover_image_path) and not os.path.isfile(target_path):
+                copyfile(self.cover_image_path, target_path)
 
         with open(os.path.join(self.output_rlrr_dir,self.song_name) + '/' + self.song_name + '_' + self.difficulty + '.rlrr', 'w') as outfile:
             json.dump(self.out_dict, outfile, indent=4)
