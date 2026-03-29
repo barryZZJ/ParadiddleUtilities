@@ -302,9 +302,8 @@ class MidiConverter:
             
             # Create reverse toggle map for lookup
             toggle_map_rev = {}
-            for note in toggle_map:
-                for drum in toggle_map[note]:
-                    toggle_map_rev[drum["drum"]] = note
+            for note, drum in toggle_map.items():
+                toggle_map_rev[drum] = note
                     
             track_to_convert = mid.tracks[self.convert_track_index]
             event_count = 0
