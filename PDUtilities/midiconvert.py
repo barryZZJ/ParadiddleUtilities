@@ -395,6 +395,13 @@ class MidiConverter:
         print("Converting to rlrr...")
         if not self.midi_file:
             return "Please slect a MIDI file first."
+        target_rlrr_path = os.path.join(self.output_rlrr_dir, self.song_name, self.song_name + '_' + self.difficulty + '.rlrr')
+        if os.path.isfile(target_rlrr_path):
+            reply = QMessageBox.question(None, "Overwrite File?",
+                                            f"The output file already exists at:\n{target_rlrr_path}\nDo you want to overwrite it?",
+                                            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if reply != QMessageBox.Yes:
+                return "Aborted."
         self.analyze_midi_file()
         # Filter out empty strings from track lists
         flt_drum_tracks = [x for x in self.drum_tracks if x.strip()]
@@ -459,6 +466,6 @@ class MidiConverter:
             if os.path.isfile(self.cover_image_path) and not os.path.isfile(target_path):
                 copyfile(self.cover_image_path, target_path)
 
-        with open(os.path.join(self.output_rlrr_dir,self.song_name) + '/' + self.song_name + '_' + self.difficulty + '.rlrr', 'w') as outfile:
+        with open(target_rlrr_path, 'w') as outfile:
             json.dump(self.out_dict, outfile, indent=4)
             return "Conversion done!"
