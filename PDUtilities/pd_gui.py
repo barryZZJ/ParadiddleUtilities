@@ -106,9 +106,13 @@ class PD_GUI(QtWidgets.QMainWindow):
         self.show()
 
     def count_track_notes(self):
-        if self.mc.midi_file is None or self.mc.midi_file == "":
+        if self.mc.midi_file is None or self.mc.midi_file == "" or not os.path.exists(self.mc.midi_file):
             return 0
-        mid = mido.MidiFile(self.mc.midi_file)
+        try:
+            mid = mido.MidiFile(self.mc.midi_file)
+        except Exception as e:
+            print(f"Error loading MIDI file: {e}")
+            return 0
         note_count = 0
         for msg in mid.tracks[self.mc.convert_track_index]:
             if msg.type == 'note_on':
@@ -116,9 +120,13 @@ class PD_GUI(QtWidgets.QMainWindow):
         return note_count
 
     def count_all_notes(self):
-        if self.mc.midi_file is None or self.mc.midi_file == "":
+        if self.mc.midi_file is None or self.mc.midi_file == "" or not os.path.exists(self.mc.midi_file):
             return 0
-        mid = mido.MidiFile(self.mc.midi_file)
+        try:
+            mid = mido.MidiFile(self.mc.midi_file)
+        except Exception as e:
+            print(f"Error loading MIDI file: {e}")
+            return 0
         note_count = 0
         for i, track in enumerate(mid.tracks):
             for msg in track:
