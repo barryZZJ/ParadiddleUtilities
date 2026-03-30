@@ -76,6 +76,7 @@ class PD_GUI(QtWidgets.QMainWindow):
             selDrumTrackBtn = getattr(self, ('selectDrumTrackButton_' + str(i+1)), None)
             prevSongTrackBtn = getattr(self, ('previewSongTrackButton_' + str(i+1)), None)
             prevDrumTrackBtn = getattr(self, ('previewDrumTrackButton_' + str(i+1)), None)
+            clearAllTrackBtn = getattr(self, ('clearAllTrackButton'), None)
 
             if selDrumTrackBtn:
                 selDrumTrackBtn.clicked.connect(self._select_audio_file_clicked)
@@ -85,7 +86,9 @@ class PD_GUI(QtWidgets.QMainWindow):
                 prevSongTrackBtn.clicked.connect(self._preview_audio_file)
             if prevDrumTrackBtn:
                 prevDrumTrackBtn.clicked.connect(self._preview_audio_file)
-            
+            if clearAllTrackBtn:
+                clearAllTrackBtn.clicked.connect(self._clear_audio_files)
+
 
         self.midiTrackComboBox.currentIndexChanged.connect(self._midi_track_index_changed)
         self.difficultyComboBox.currentTextChanged.connect(self._difficulty_text_changed)
@@ -191,6 +194,22 @@ class PD_GUI(QtWidgets.QMainWindow):
         # Play audio file
         thread = threading.Thread(target=self._track_song_player(audio_path))
         thread.start()
+
+    def _clear_audio_files(self):
+        self.mc.song_tracks = [""] * 5
+        self.mc.drum_tracks = [""] * 4
+        self.mc.song_preview_track = ""
+
+        for track_index in range(4):
+            line_edit = getattr(self, ('drumTrackLineEdit_' + str(track_index+1)))
+            line_edit.setText('')
+
+        for track_index in range(5):
+            line_edit = getattr(self, ('songTrackLineEdit_' + str(track_index+1)))
+            line_edit.setText('')
+
+        line_edit = getattr(self, ('songPreviewLineEdit'))
+        line_edit.setText('')
 
     def _open_song_display_clicked(self):
         if not self.mc.midi_file:
