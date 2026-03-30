@@ -166,7 +166,9 @@ class PD_GUI(QtWidgets.QMainWindow):
         self._set_last_open_folder("midi_map", midi_yaml)
 
     def _get_last_open_folder(self, key):
-        return self.lastOpenFolders.get(key, ".")
+        if key not in self.lastOpenFolders or not os.path.exists(self.lastOpenFolders[key]):
+            return "."
+        return self.lastOpenFolders[key]
 
     def _set_last_open_folder(self, key, selected_path):
         if selected_path:
