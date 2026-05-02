@@ -29,6 +29,7 @@ class MidiConverter:
             'authoringTool': 'ParadiddleUtilities MidiConverter',
             'recordingMetadata' : {},
             'audioFileData' : {},
+            'highwaySettings' : {},
             'instruments' : [],
             'events' : []
         }
@@ -56,6 +57,18 @@ class MidiConverter:
         self.convert_track_index = 0
         self.note_to_drum_maps = [] # in order of difficulty
         self.toggle_to_drum_maps = [] # example: [{111: Snare, 110: HiHat}, {100: Kick}]
+        
+        self.ghost_notes_enabled = False
+        self.accent_notes_enabled = False
+        self.ghost_note_threshold = 20
+        self.accent_note_threshold = 110
+        
+        self.highwaySettings = {
+            'ghostNotes': False,
+            'accentNotes': False,
+            'ghostNoteThreshold': 20,
+            'accentNoteThreshold': 110,
+        }
 
         self.audio_file_data = {
             'songTracks' : [],
@@ -437,6 +450,12 @@ class MidiConverter:
         self.audio_file_data['calibrationOffset'] = self.calibration_offset
         self.audio_file_data['songPreview'] = self.song_preview_track.split('/')[-1] if self.song_preview_track else ''
         self.out_dict["audioFileData"] = self.audio_file_data
+        
+        self.highwaySettings['ghostNotes'] = self.ghost_notes_enabled
+        self.highwaySettings['accentNotes'] = self.accent_notes_enabled
+        self.highwaySettings['ghostNoteThreshold'] = self.ghost_note_threshold
+        self.highwaySettings['accentNoteThreshold'] = self.accent_note_threshold
+        self.out_dict["highwaySettings"] = self.highwaySettings
 
         self.recording_metadata['title'] = self.song_name
         self.recording_metadata['description'] = self.recording_description

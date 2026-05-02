@@ -46,7 +46,7 @@ class PD_GUI(QtWidgets.QMainWindow):
                     self.IPLineEdit.setText(pdsave["ip"])
         except:
             pass
-
+        
         # Midi Companion Buttons
         self.connectButton.clicked.connect(self._connect_clicked)
         self.midiInputComboBox.currentIndexChanged.connect(self._midi_input_index_changed)
@@ -59,6 +59,10 @@ class PD_GUI(QtWidgets.QMainWindow):
         self.selectMidiButton.clicked.connect(self._select_midi_clicked)
         self.selectMidiMappingButton.clicked.connect(self._select_midi_map_clicked)
         self.selectDrumSetButton.clicked.connect(self._select_drum_set_clicked)
+        self.ghostCheckbox.stateChanged.connect(self._select_ghost_notes_changed)
+        self.accentCheckbox.stateChanged.connect(self._select_accent_notes_changed)
+        self.ghostThresholdSpinBox.valueChanged.connect(self._ghost_note_threshold_changed)
+        self.accentThresholdSpinBox.valueChanged.connect(self._accent_note_threshold_changed)
         self.convertButton.clicked.connect(self._convert_clicked)
         self.setOutputButton.clicked.connect(self._set_output_clicked)
         self.selectCoverImageButton.clicked.connect(self._select_cover_image_clicked)
@@ -345,6 +349,22 @@ class PD_GUI(QtWidgets.QMainWindow):
             print(f"Song preview track: {self.mc.song_preview_track}")
             self._set_last_open_folder("song_preview", audio_file)
             self.songPreviewLineEdit.setText(audio_file.split('/')[-1])
+
+    def _select_ghost_notes_changed(self, state):
+        self.ghostThresholdLabel.setEnabled(bool(state))
+        self.ghostThresholdSpinBox.setEnabled(bool(state))
+        self.mc.ghost_notes_enabled = bool(state)
+
+    def _select_accent_notes_changed(self, state):
+        self.accentThresholdLabel.setEnabled(bool(state))
+        self.accentThresholdSpinBox.setEnabled(bool(state))
+        self.mc.accent_notes_enabled = bool(state)
+
+    def _ghost_note_threshold_changed(self, value):
+        self.mc.ghost_note_threshold = int(value)
+
+    def _accent_note_threshold_changed(self, value):
+        self.mc.accent_note_threshold = int(value)
 
     def _convert_clicked(self):
         self.mc.song_name = self.songNameLineEdit.text()

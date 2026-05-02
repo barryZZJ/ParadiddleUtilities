@@ -531,7 +531,7 @@ QCheckBox {
              <bool>false</bool>
             </property>
             <property name="toolTip">
-             <string extracomment="Any notes above this velocity will be considered an accent note."/>
+             <string>Any notes above this velocity will be considered an accent note.</string>
             </property>
             <property name="toolTipDuration">
              <number>1</number>
@@ -547,7 +547,7 @@ QCheckBox {
              <bool>false</bool>
             </property>
             <property name="toolTip">
-             <string extracomment="Any notes above this velocity will be considered an accent note."/>
+             <string>Any notes above this velocity will be considered an accent note.</string>
             </property>
             <property name="toolTipDuration">
              <number>0</number>
@@ -583,7 +583,7 @@ QCheckBox {
              <bool>false</bool>
             </property>
             <property name="toolTip">
-             <string extracomment="Any notes below this velocity will be considered an accent note."/>
+             <string>Any notes below this velocity will be considered an accent note.</string>
             </property>
             <property name="text">
              <string>Velocity Threshold</string>
@@ -596,7 +596,7 @@ QCheckBox {
              <bool>false</bool>
             </property>
             <property name="toolTip">
-             <string extracomment="Any notes below this velocity will be considered an accent note."/>
+             <string>Any notes below this velocity will be considered an accent note.</string>
             </property>
             <property name="maximum">
              <number>127</number>
